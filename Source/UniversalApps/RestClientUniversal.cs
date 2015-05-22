@@ -227,58 +227,58 @@ namespace RestSharp
         /// <param name="request">RestRequest to execute</param>
         /// <returns>Assembled System.Uri</returns>
 
-        public Uri BuildUri(IRestRequest request)
-        {
-            throw new NotImplementedException("Not Used for Windows.  Please Implement if needed");
-        }
-
         //public Uri BuildUri(IRestRequest request)
         //{
-        //    var assembled = request.Resource;
-        //    var urlParms = request.Parameters.Where(p => p.Type == ParameterType.UrlSegment);
-        //    foreach (var p in urlParms)
-        //    {
-        //        assembled = assembled.Replace("{" + p.Name + "}", WebUtility.UrlEncode(p.Value.ToString()));
-        //    }
-
-        //    if (!string.IsNullOrEmpty(assembled) && assembled.StartsWith("/"))
-        //    {
-        //        assembled = assembled.Substring(1);
-        //    }
-
-        //    if (!string.IsNullOrEmpty(BaseUrl))
-        //    {
-        //        if (string.IsNullOrEmpty(assembled))
-        //        {
-        //            assembled = BaseUrl;
-        //        }
-        //        else
-        //        {
-        //            assembled = string.Format("{0}/{1}", BaseUrl, assembled);
-        //        }
-        //    }
-
-        //    IEnumerable<Parameter> parameters = null;
-
-        //    if (request.Method != Method.POST && request.Method != Method.PUT && request.Method != Method.PATCH)
-        //    {
-        //        // build and attach querystring if this is a get-style request
-        //        parameters = request.Parameters.Where(p => p.Type == ParameterType.GetOrPost || p.Type == ParameterType.QueryString);
-        //    }
-        //    else
-        //    {
-        //        parameters = request.Parameters.Where(p => p.Type == ParameterType.QueryString);
-        //    }
-
-        //    // build and attach querystring 
-        //    if (parameters != null && parameters.Any())
-        //    {
-        //        var data = EncodeParameters(parameters);
-        //        assembled = string.Format("{0}?{1}", assembled, data);
-        //    }
-
-        //    return new Uri(assembled);
+        //    throw new NotImplementedException("Not Used for Windows.  Please Implement if needed");
         //}
+
+        public Uri BuildUri(IRestRequest request)
+        {
+            var assembled = request.Resource;
+            var urlParms = request.Parameters.Where(p => p.Type == ParameterType.UrlSegment);
+            foreach (var p in urlParms)
+            {
+                assembled = assembled.Replace("{" + p.Name + "}", WebUtility.UrlEncode(p.Value.ToString()));
+            }
+
+            if (!string.IsNullOrEmpty(assembled) && assembled.StartsWith("/"))
+            {
+                assembled = assembled.Substring(1);
+            }
+
+            if (!string.IsNullOrEmpty(BaseUrl))
+            {
+                if (string.IsNullOrEmpty(assembled))
+                {
+                    assembled = BaseUrl;
+                }
+                else
+                {
+                    assembled = string.Format("{0}/{1}", BaseUrl, assembled);
+                }
+            }
+
+            IEnumerable<Parameter> parameters = null;
+
+            if (request.Method != Method.POST && request.Method != Method.PUT && request.Method != Method.PATCH)
+            {
+                // build and attach querystring if this is a get-style request
+                parameters = request.Parameters.Where(p => p.Type == ParameterType.GetOrPost || p.Type == ParameterType.QueryString);
+            }
+            else
+            {
+                parameters = request.Parameters.Where(p => p.Type == ParameterType.QueryString);
+            }
+
+            // build and attach querystring 
+            if (parameters != null && parameters.Any())
+            {
+                var data = EncodeParameters(parameters);
+                assembled = string.Format("{0}?{1}", assembled, data);
+            }
+
+            return new Uri(assembled);
+        }
 
         private static string EncodeParameters(IEnumerable<Parameter> parameters)
         {
@@ -324,13 +324,14 @@ namespace RestSharp
                 throw new ArgumentNullException("IRestRequest parameter was null");
             }
 
-            if(string.IsNullOrEmpty(request.Resource))
-            {
-                throw new ArgumentException("There was no URI Specified in request.Resource");
-            }
+            //if(string.IsNullOrEmpty(request.Resource))
+            //{
+            //    throw new ArgumentException("There was no URI Specified in request.Resource");
+            //}
 
+            Uri requestUri = BuildUri(request);
             //  Create HttpRequest message based on request
-            HttpRequestMessage reqMessage = new HttpRequestMessage(ConvertHttpMethod(request.Method), new Uri(this.BaseUrl + request.Resource));
+            HttpRequestMessage reqMessage = new HttpRequestMessage(ConvertHttpMethod(request.Method), requestUri);
             
             //   Look for request parameter type of RequestBody
             var reqBody = (from p in request.Parameters
